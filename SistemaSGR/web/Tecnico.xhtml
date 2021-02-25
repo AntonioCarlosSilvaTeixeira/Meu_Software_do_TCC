@@ -1,0 +1,472 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:p="http://primefaces.org/ui">
+    <h:head>
+        <title>Serviços Técnicos</title>
+        <h:outputScript library="js" name="scripts.js"/>
+    </h:head>
+    <h:body style="background: threedface">
+        <p:growl id="mensagem" />
+        <p:panel header="Sistema Gerencia de Requisições / Serviços Técnicos">
+            <h:outputText value="#{loginBean.pessoalogado.nome}"/>
+            <div>
+                <p:graphicImage library="img" name="topo_esquerdo.jpg" style="float: left"/>
+                <p:graphicImage library="img" name="topo_direito.jpg"  style="float: right"/>
+            </div>
+            <br/><br/><br/><br/><br/><br/>
+        </p:panel>
+
+        <h:form id="formbotao">
+            <p:panel style="height: 395px" >
+                <p:panel style="background: blue">
+                    <div align="center">
+                        <p:menuButton value="Cadastros">
+                            <p:menuitem value="Cadastrar Pessoas" actionListener="#{servicosTecnicosBean.novo()}"
+                                        oncomplete="PF('castPessoa').show();" update=":formCastPessoa:pgCastPessoa"/>
+
+                            <p:menuitem value="Cadastrar Locais" actionListener="#{servicosTecnicosBean.novo()}"
+                                        oncomplete="PF('castLocal').show();" update=":formCastLocal:pgCastLocal"
+                                        rendered="#{servicosTecnicosBean.temPermissoes([''])}"/>
+
+                            <p:menuitem value="Cadastrar Serviços" actionListener="#{servicosTecnicosBean.novo()}"
+                                        oncomplete="PF('castTipo').show();" update=":formCastTipo:pgCastTipo"
+                                        rendered="#{servicosTecnicosBean.temPermissoes([''])}"/>
+
+                            <p:menuitem value="Cadastrar Tipos" actionListener="#{servicosTecnicosBean.novo()}"
+                                        oncomplete="PF('castServico').show();" update=":formCastServico:pgCastServico"
+                                        rendered="#{servicosTecnicosBean.temPermissoes([''])}"/>
+
+                            <p:menuitem value="Cadastrar Funções" actionListener="#{servicosTecnicosBean.novo()}"
+                                        oncomplete="PF('castFuncao').show();" update=":formCastFuncao:pgCastFuncao"
+                                        rendered="#{servicosTecnicosBean.temPermissoes([''])}"/>
+                        </p:menuButton>
+
+                        <p:commandButton value="Requisições Ativas" actionListener="#{servicosTecnicosBean.listarAtivos()}" 
+                                         oncomplete="PF('osAtivas').show();" update=":formDTAtivos:dts1"/>
+
+                        <p:commandButton value="Requisições em Andamento" actionListener="#{servicosTecnicosBean.listarEmAndamentos()}"
+                                         oncomplete="PF('osEmAndamento').show();" update=":formDTAndamento:dts3"/>
+
+                        <p:commandButton value="Requisições Atendidas" actionListener="#{servicosTecnicosBean.listarAtendidos()}" 
+                                         oncomplete="PF('osAtendidos').show();" update=":formDTAtendidos:dts2"/>
+
+                        <p:commandButton value="Editar senha" 
+                                         oncomplete="PF('editarSenha').show();" update=":form5:pg5"/>
+
+                        <p:commandButton value="Sair" actionListener="#{servicosTecnicosBean.sair()}"/>
+                    </div>
+                </p:panel>
+            </p:panel>
+        </h:form>
+
+        <p:dialog header="Ordem de Serviço" closable="false" draggable="false" resizable="false" modal="true"
+                  widgetVar="ordServico">
+
+            <h:form id="formEditar">
+                <div align="center">
+                    <h:panelGrid id="pgEditar" columns="2">  
+                        <p:outputLabel value="Situação:"/>
+                        <p:selectOneMenu value="#{servicosTecnicosBean.osd.situacao}" 
+                                         converter="omnifaces.SelectItemsConverter" style="width:180px">
+                            <f:selectItem itemLabel="#{servicosTecnicosBean.osd.situacao}" itemDisabled="true"/>
+                            <f:selectItem itemLabel="Ativo" itemValue="Ativo"/>
+                            <f:selectItem itemLabel="Atendido" itemValue="Atendido"/>
+                            <f:selectItem itemLabel="Em andamento" itemValue="Em andamento"/>
+                        </p:selectOneMenu>
+                    </h:panelGrid>
+
+                    <h:panelGrid columns="2">
+                        <p:commandButton value="Salvar" actionListener="#{servicosTecnicosBean.editarSalvarAtivos()}"
+                                         update=":mensagem :formDTAtivos:dts1"/>
+                        <p:commandButton value="Sair" oncomplete="PF('ordServico').hide();"/>
+                    </h:panelGrid>
+                </div>
+            </h:form>
+        </p:dialog>
+
+        <p:dialog header="Ordem de Serviço" closable="false" draggable="false" resizable="false" modal="true"
+                  widgetVar="ordAndamento">
+
+            <h:form id="formEditarAnd">
+                <div align="center">
+                    <h:panelGrid id="pgEditarAnd" columns="2">
+
+                        <p:outputLabel value="Técnico:"/>
+                        <p:outputLabel value="#{servicosTecnicosBean.osd.tecnico}"/>
+
+                        <p:outputLabel value="Descrição:"/>
+                        <p:inputTextarea rows="3" cols="40" value="#{servicosTecnicosBean.osd.descrição}"/>
+
+                        <p:outputLabel for="dataR" value="Resolvido em:"/>
+                        <p:calendar id="dataR" value="#{servicosTecnicosBean.data}"/>
+
+                        <p:outputLabel value="Situação:"/>
+                        <p:selectOneMenu value="#{servicosTecnicosBean.osd.situacao}" 
+                                         converter="omnifaces.SelectItemsConverter" style="width:180px">
+                            <f:selectItem itemLabel="#{servicosTecnicosBean.osd.situacao}" itemDisabled="true"/>
+                            <f:selectItem itemLabel="Ativo" itemValue="Ativo"/>
+                            <f:selectItem itemLabel="Atendido" itemValue="Atendido"/>
+                            <f:selectItem itemLabel="Em andamento" itemValue="Em andamento"/>
+                        </p:selectOneMenu>
+                    </h:panelGrid>
+
+                    <h:panelGrid columns="2">
+                        <p:commandButton value="Salvar" actionListener="#{servicosTecnicosBean.editarSalvarAndamento()}"
+                                         update=":mensagem :formDTAndamento:dts3 :formEditarAnd:pgEditarAnd"/>
+                        <p:commandButton value="Sair" oncomplete="PF('ordAndamento').hide();"
+                                         update=":mensagem :formEditarAnd:pgEditarAnd"/>
+                    </h:panelGrid>
+                </div>
+            </h:form>
+        </p:dialog>
+
+        <p:dialog header="Requisições Ativas" resizable="false" modal="true" widgetVar="osAtivas">
+            <h:form id="formDTAtivos">
+                <p:dataTable id="dts1" emptyMessage="Nenhum Resgistro Encontrado." paginator="true" rows="7"
+                             paginatorPosition="bottom" style="width:1250px" value="#{servicosTecnicosBean.oslistas}" 
+                             var="os">
+
+                    <p:column headerText="Nome">
+                        <p:outputLabel value="#{os.pessoa.nome}"/>
+                    </p:column>
+                    <p:column headerText="Data" style="width:85px">
+                        <p:outputLabel value="#{os.data}"/>
+                    </p:column>
+
+                    <p:column headerText="Hora" style="width:70px">
+                        <p:outputLabel value="#{os.hora}"/>
+                    </p:column>
+
+                    <p:column headerText="Local">
+                        <p:outputLabel value="#{os.local.nome}"/>
+                    </p:column>
+
+                    <p:column headerText="Serviço">
+                        <p:outputLabel value="#{os.tipo.nome}"/>
+                    </p:column>
+
+                    <p:column headerText="Tipo">
+                        <p:outputLabel value="#{os.servico.nome}"/>
+                    </p:column>
+
+                    <p:column headerText="Observação" style="width:350px">
+                        <p:outputLabel value="#{os.observacao}"/>
+                    </p:column>
+
+                    <p:column headerText="Opções" style="width:88px">
+                        <p:commandButton icon="ui-icon-trash" actionListener="#{servicosTecnicosBean.excluirAtivos}"
+                                         update=":mensagem :formDTAtivos:dts1"
+                                         rendered="#{servicosTecnicosBean.temPermissoes([''])}">
+                            <p:confirm header="Confirmação" message="Deseja excluir a Requisição?"
+                                       icon="ui-icon-alert"/>
+                            <f:attribute name="selecionado" value="#{os}"/>   
+                        </p:commandButton>
+
+                        <p:commandButton icon="ui-icon-pencil" actionListener="#{servicosTecnicosBean.editarAtivos}"
+                                         oncomplete="PF('ordServico').show();" update=":formEditar:pgEditar">
+                            <f:attribute name="selecionado" value="#{os}"/> 
+                        </p:commandButton>
+                    </p:column>
+                </p:dataTable>
+
+                <p:confirmDialog global="true">
+                    <div align="center">
+                        <p:commandButton value="Sim" type="button" styleClass="ui-confirmdialog-yes" icon="ui-icon-check"/>
+                        <p:commandButton value="Não" type="button" styleClass="ui-confirmdialog-no" icon="ui-icon-close"/>
+                    </div>
+                </p:confirmDialog>
+            </h:form>
+        </p:dialog>
+
+        <p:dialog header="Requisições Atendidas" resizable="false" modal="true" widgetVar="osAtendidos">
+            <h:form id="formDTAtendidos">
+                <p:dataTable id="dts2" emptyMessage="Nenhum Resgistro Encontrado." paginator="true" rows="7"
+                             paginatorPosition="bottom" style="width:1250px" value="#{servicosTecnicosBean.oslistas}" 
+                             var="os1">
+                    <p:column headerText="Nome">
+                        <p:outputLabel value="#{os1.pessoa.nome}"/>
+                    </p:column>
+                    <p:column headerText="Data" style="width:85px">
+                        <p:outputLabel value="#{os1.data}"/>
+                    </p:column>
+
+                    <p:column headerText="Hora" style="width:70px">
+                        <p:outputLabel value="#{os1.hora}"/>
+                    </p:column>
+
+                    <p:column headerText="Local">
+                        <p:outputLabel value="#{os1.local.nome}"/>
+                    </p:column>
+
+                    <p:column headerText="Serviço">
+                        <p:outputLabel value="#{os1.tipo.nome}"/>
+                    </p:column>
+
+                    <p:column headerText="Tipo">
+                        <p:outputLabel value="#{os1.servico.nome}"/>
+                    </p:column>
+
+                    <p:column headerText="Técnico" style="width:85px">
+                        <p:outputLabel value="#{os1.tecnico}"/>
+                    </p:column>
+
+                    <p:column headerText="Resolvido em:" style="width:85px">
+                        <p:outputLabel value="#{os1.resolvidoEm}" />
+                    </p:column>
+
+                    <p:column headerText="Opções" style="width:60px">
+                        <p:commandButton icon="ui-icon-trash" actionListener="#{servicosTecnicosBean.excluirAtendidos}"
+                                         update=":mensagem :formDTAtendidos:dts2"
+                                         rendered="#{servicosTecnicosBean.temPermissoes([''])}">
+                            <p:confirm header="Confirmação" message="Deseja excluir a Requisição?"
+                                       icon="ui-icon-alert"/>
+                            <f:attribute name="selecionado" value="#{os1}"/>   
+                        </p:commandButton>
+                    </p:column>
+                </p:dataTable>
+            </h:form>
+        </p:dialog>
+
+        <p:dialog header="Requisições Em Andamento" resizable="false" modal="true" widgetVar="osEmAndamento">
+            <h:form id="formDTAndamento">
+                <p:dataTable id="dts3" emptyMessage="Nenhum Resgistro Encontrado." paginator="true" rows="7"
+                             paginatorPosition="bottom" style="width:1250px" value="#{servicosTecnicosBean.oslistas}" 
+                             var="os">
+
+                    <p:column headerText="Nome">
+                        <p:outputLabel value="#{os.pessoa.nome}"/>
+                    </p:column>
+                    <p:column headerText="Data" style="width:85px">
+                        <p:outputLabel value="#{os.data}"/>
+                    </p:column>
+
+                    <p:column headerText="Hora" style="width:70px">
+                        <p:outputLabel value="#{os.hora}"/>
+                    </p:column>
+
+                    <p:column headerText="Local">
+                        <p:outputLabel value="#{os.local.nome}"/>
+                    </p:column>
+
+                    <p:column headerText="Serviço">
+                        <p:outputLabel value="#{os.tipo.nome}"/>
+                    </p:column>
+
+                    <p:column headerText="Tipo">
+                        <p:outputLabel value="#{os.servico.nome}"/>
+                    </p:column>
+
+                    <p:column headerText="Técnico">
+                        <p:outputLabel value="#{os.tecnico}"/>
+                    </p:column>
+
+                    <p:column headerText="Observação" style="width:350px">
+                        <p:outputLabel value="#{os.observacao}"/>
+                    </p:column>
+
+                    <p:column headerText="Opções" style="width:88px">
+                        <p:commandButton icon="ui-icon-trash" actionListener="#{servicosTecnicosBean.excluirAndamento}"
+                                         update=":mensagem :formDTAndamento:dts3"
+                                         rendered="#{servicosTecnicosBean.temPermissoes([''])}">
+                            <p:confirm header="Confirmação" message="Deseja excluir a Requisição?"
+                                       icon="ui-icon-alert"/>
+                            <f:attribute name="selecionado" value="#{os}"/>   
+                        </p:commandButton>
+
+                        <p:commandButton icon="ui-icon-pencil" actionListener="#{servicosTecnicosBean.editarAndamento}"
+                                         oncomplete="PF('ordAndamento').show();" update=":formEditarAnd:pgEditarAnd">
+                            <f:attribute name="selecionado" value="#{os}"/> 
+                        </p:commandButton>
+                    </p:column>
+                </p:dataTable>
+            </h:form>
+        </p:dialog>
+
+        <p:dialog header="Cadastrar Pessoas" draggable="false" resizable="false" modal="true" widgetVar="castPessoa">
+            <h:form id="formCastPessoa">
+                <h:panelGrid id="pgCastPessoa" columns="2">
+
+                    <p:outputLabel for="nome" value="Nome:"/>
+                    <p:inputText id="nome" maxlength="50" size="40" value="#{servicosTecnicosBean.pessoa.nome}"
+                                 required="true" requiredMessage="O campo nome é obrigatório!"/>
+
+                    <p:outputLabel for="cpf" value="CPF:"/>
+                    <p:inputMask mask="999.999.999-99" maxlength="14" size="15" value="#{servicosTecnicosBean.pessoa.cpf}"
+                                 id="cpf" required="true" requiredMessage="O campo CPF é obrigatório!"/>
+
+                    <p:outputLabel for="rg" value="RG:"/>
+                    <p:inputText id="rg" maxlength="50" size="15" value="#{servicosTecnicosBean.pessoa.rg}"
+                                 required="true" requiredMessage="O campo RG é obrigatório!"/>
+
+                    <p:outputLabel for="ra" value="RA:"/>
+                    <p:inputMask id="ra" mask="99-99999" maxlength="8" size="15" value="#{servicosTecnicosBean.pessoa.ra}"
+                                 required="true" requiredMessage="O campo RA é obrigatório quando for Aluno!"/>
+
+                    <p:outputLabel for="endereco" value="Endereço:"/>
+                    <p:inputText id="endereco" maxlength="50" size="40" value="#{servicosTecnicosBean.pessoa.endereco}"
+                                 required="true" requiredMessage="O campo Endereço é obrigatório!"/>
+
+                    <p:outputLabel value="Celular:"/>
+                    <p:inputMask mask="(99)9-9999-9999" maxlength="15" size="15" value="#{servicosTecnicosBean.pessoa.celular}"/>
+
+                    <p:outputLabel value="Telefone:"/>
+                    <p:inputMask mask="(99)9999-9999" maxlength="13" size="15" value="#{servicosTecnicosBean.pessoa.fone}"/>
+
+                    <p:outputLabel for="masp" value="MASP:"/>
+                    <p:inputMask id="masp" mask="9999999-9" maxlength="9" size="15" value="#{servicosTecnicosBean.pessoa.masp}"
+                                 required="true" requiredMessage="O campo Masp é obrigatório quando não for aluno!"/>
+
+                    <p:outputLabel for="funcao" value="Função:"/>
+                    <p:selectOneMenu id="funcao" value="#{servicosTecnicosBean.pessoa.funcao}" style="width:184px"
+                                     required="true" requiredMessage="O campo Função é obrigatório!">
+                        <f:selectItems  value="#{servicosTecnicosBean.funcoes}" var="Funcao"
+                                        itemValue="#{Funcao.nome}" itemLabel="#{Funcao.nome}"/>
+                    </p:selectOneMenu>
+                </h:panelGrid>
+
+                <div align="right">
+                    <p:commandButton value="Limpar" actionListener="#{servicosTecnicosBean.novo()}"
+                                     update=":mensagem :formCastPessoa:pgCastPessoa"/>
+
+                    <p:commandButton value="Salvar" actionListener="#{servicosTecnicosBean.salvarPessoa()}"
+                                     update=":mensagem :formCastPessoa:pgCastPessoa"/>
+                </div>
+                <div align="left">
+                    <h:outputText value="Campos com * são obrigatórios!" style="color: red; font-size: 13px"/>  
+                </div>
+            </h:form>
+        </p:dialog>
+
+        <p:dialog header="Cadastrar Locais" draggable="false" resizable="false" modal="true" widgetVar="castLocal">
+            <h:form id="formCastLocal">
+                <h:panelGrid id="pgCastLocal" columns="2">
+
+                    <p:outputLabel for="nome" value="Nome:"/>
+                    <p:inputText id="nome" maxlength="50" size="30" value="#{servicosTecnicosBean.local.nome}"
+                                 required="true" requiredMessage="O campo nome é obrigatório"/>
+
+                    <p:outputLabel for="local" value="Número do Local:"/>
+                    <p:inputText maxlength="14" size="15" value="#{servicosTecnicosBean.local.numero_local}"
+                                 id="local" required="true" requiredMessage="O campo Numero do Local é obrigatório!"/>
+                </h:panelGrid>
+
+                <div align="right">
+                    <p:commandButton value="Salvar" actionListener="#{servicosTecnicosBean.salvarLocal()}"
+                                     update=":mensagem :formCastLocal:pgCastLocal"/>
+                </div>
+                <div align="left">
+                    <h:outputText value="Campos com * são obrigatórios!" style="color: red; font-size: 13px"/>  
+                </div>
+            </h:form>
+        </p:dialog>
+
+        <p:dialog header="Cadastrar Serviço" draggable="false" resizable="false" modal="true" widgetVar="castTipo">
+            <h:form id="formCastTipo">
+                <h:panelGrid id="pgCastTipo" columns="2">
+                    <p:outputLabel for="nome" value="Nome:"/>
+                    <p:inputText id="nome" maxlength="50" size="30" value="#{servicosTecnicosBean.tipo.nome}"
+                                 required="true" requiredMessage="O campo nome é obrigatório"/>
+
+                    <p:outputLabel for="funcao" value="Função:"/>
+                    <p:selectOneMenu id="funcao" value="#{servicosTecnicosBean.tipo.funcao}" style="width:184px"
+                                     required="true" requiredMessage="O campo Função é obrigatório!">
+                        <f:selectItems  value="#{servicosTecnicosBean.funcoes}" var="Funcao"
+                                        itemValue="#{Funcao.nome}" itemLabel="#{Funcao.nome}"/>
+                    </p:selectOneMenu>
+                </h:panelGrid>
+
+                <div align="right">
+                    <p:commandButton value="Salvar" actionListener="#{servicosTecnicosBean.salvarTipo()}"
+                                     update=":mensagem :formCastTipo:pgCastTipo"/>
+                </div>
+
+                <div align="left">
+                    <h:outputText value="Campos com * são obrigatórios!" style="color: red; font-size: 13px"/>  
+                </div>
+            </h:form>
+        </p:dialog>
+
+        <p:dialog header="Cadastrar Tipo" draggable="false" resizable="false" modal="true" widgetVar="castServico">
+            <h:form id="formCastServico">
+                <h:panelGrid id="pgCastServico" columns="2">
+
+                    <p:outputLabel for="funcao" value="Função:"/>
+                    <p:selectOneMenu id="funcao" value="#{servicosTecnicosBean.tipo.funcao}" style="width:184px"
+                                     required="true" requiredMessage="O campo Função é obrigatório!">
+                        <f:selectItems  value="#{servicosTecnicosBean.funcoes}" var="Funcao"
+                                        itemValue="#{Funcao.nome}" itemLabel="#{Funcao.nome}"/>
+                        <p:ajax listener="#{servicosTecnicosBean.popular}" update=":formCastServico:tipo"/>
+                    </p:selectOneMenu>
+
+                    <p:outputLabel for="tipo" value="Serviço:"/>
+                    <p:selectOneMenu id="tipo" value="#{servicosTecnicosBean.servico.tipo}" 
+                                     converter="omnifaces.SelectItemsConverter" style="width:180px"
+                                     required="true" requiredMessage="O campo Serviço é obrigatório">
+                        <f:selectItem itemLabel="Serviço*" itemDisabled="true"/>
+                        <f:selectItems  value="#{servicosTecnicosBean.tipos}" var="Tipo"
+                                        itemValue="#{Tipo}" itemLabel="#{Tipo.nome}"/>
+                    </p:selectOneMenu>
+
+                    <p:outputLabel for="nome" value="Nome:"/>
+                    <p:inputText id="nome" maxlength="50" size="30" value="#{servicosTecnicosBean.servico.nome}"
+                                 required="true" requiredMessage="O campo nome é obrigatório!"/>
+                </h:panelGrid>
+
+                <div align="right">
+                    <p:commandButton value="Salvar" actionListener="#{servicosTecnicosBean.salvarServico()}"
+                                     update=":mensagem :formCastServico:pgCastServico"/>
+                </div>
+
+                <div align="left">
+                    <h:outputText value="Campos com * são obrigatórios!" style="color: red; font-size: 13px"/>  
+                </div>
+            </h:form>
+        </p:dialog>
+
+        <p:dialog header="Cadastrar Função" draggable="false" resizable="false" modal="true" widgetVar="castFuncao">
+            <h:form id="formCastFuncao">
+                <h:panelGrid id="pgCastFuncao" columns="2">
+                    <p:outputLabel for="nome" value="Nome:"/>
+                    <p:inputText id="nome" maxlength="50" size="30" value="#{servicosTecnicosBean.funcao.nome}"
+                                 required="true" requiredMessage="O campo nome é obrigatório!"/> 
+                </h:panelGrid>
+
+                <div align="right">
+                    <p:commandButton value="Salvar" actionListener="#{servicosTecnicosBean.salvarFuncao()}"
+                                     update=":mensagem :formCastFuncao:pgCastFuncao"/>
+                </div>
+
+                <div align="left">
+                    <h:outputText value="Campos com * são obrigatórios!" style="color: red; font-size: 13px"/>  
+                </div>
+            </h:form>
+        </p:dialog>
+
+        <p:dialog header="Editar Senha"  draggable="false" resizable="false" modal="true" widgetVar="editarSenha">
+            <h:form id="form5">
+                <h:panelGrid id="pg5" columns="2">
+
+                    <p:outputLabel for="senhaAtual" value="Senha Atual:"/>
+                    <p:password id="senhaAtual" maxlength="14" size="14" value="#{servicosTecnicosBean.senhaAtual}"
+                                required="true" requiredMessage="O campo senha atual é obrigatório!"/>
+
+                    <p:outputLabel for="novaSenha" value="Nova Senha:"/>
+                    <p:password id="novaSenha" maxlength="14" size="14" value="#{servicosTecnicosBean.novaSenha}"
+                                required="true" requiredMessage="O campo nova senha é obrigatório!"/>
+
+                    <p:outputLabel for="confirmaSenha" value="Confirma Senha:"/>
+                    <p:password id="confirmaSenha" maxlength="14" size="14" value="#{servicosTecnicosBean.confirmaSenha}"
+                                required="true" requiredMessage="O campo confirma senha é obrigatório!"/>
+                </h:panelGrid>
+
+                <div align="center">
+                    <p:commandButton value="Salvar" actionListener="#{servicosTecnicosBean.editarSenha()}"              
+                                     update=":mensagem :form5:pg5"/>
+                </div> 
+            </h:form>
+        </p:dialog> 
+    </h:body>
+</html>
